@@ -1,0 +1,140 @@
+body {
+    font-family: sans-serif;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.controls label {
+    font-weight: bold;
+}
+
+.preference-select label {
+    margin-left: 10px;
+    font-weight: normal;
+}
+
+#calendar-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive columns */
+    gap: 30px;
+}
+
+.month {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.day-name {
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.day {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    min-height: 60px; /* Ensure consistent height */
+    position: relative;
+    cursor: pointer;
+    background-color: #fff;
+    transition: background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes indicators down */
+    font-size: 0.9em;
+}
+
+.day.empty {
+    background-color: #eee;
+    border: 1px solid #eee;
+    cursor: default;
+}
+
+.day:not(.empty):hover {
+    background-color: #e9f5ff;
+}
+
+.indicators {
+    margin-top: 5px;
+    font-size: 0.7em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+}
+
+.indicator {
+    display: inline-block;
+    padding: 1px 3px;
+    border-radius: 3px;
+    color: white;
+    font-weight: bold;
+}
+
+/* User-specific colors (adjust as needed) */
+.indicator.jack { background-color: #007bff; } /* Blue */
+.indicator.payton { background-color: #28a745; } /* Green */
+.indicator.nick { background-color: #ffc107; } /* Yellow - text black */
+.indicator.alyssa { background-color: #dc3545; } /* Red */
+
+/* Preference specific styles within indicators */
+.indicator.prefer_not {
+   opacity: 0.7; /* Slightly faded for 'prefer_not' */
+}
+.indicator.nick.prefer_not, .indicator.nick.no { color: #333; } /* Ensure contrast for yellow */
+
+.indicator.no {
+   /* Maybe add a border or different shape for 'no' */
+   border: 1px solid rgba(0,0,0,0.5);
+}
+
+
+/* Alternative: Style the day itself based on logged-in user's preference (if needed) */
+/* Example:
+.day[data-jack="prefer_not"] { background-color: #ffeecc; }
+.day[data-jack="no"] { background-color: #ffcccc; }
+*/
+
+#message-area {
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+    min-height: 1.2em;
+}
+
+.success {
+    color: green;
+}
+
+.error {
+    color: red;
+}
