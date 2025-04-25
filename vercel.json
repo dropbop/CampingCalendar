@@ -5,14 +5,15 @@
         "src": "api/index.py",
         "use": "@vercel/python",
         "config": { "maxLambdaSize": "15mb" }
+      },
+      {
+        "src": "static/**",
+        "use": "@vercel/static"
       }
     ],
     "routes": [
       {
         "src": "/static/(.*)",
-        "headers": {
-          "cache-control": "s-maxage=31536000,immutable"
-        },
         "dest": "/static/$1"
       },
       {
