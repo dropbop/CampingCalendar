@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camping Coordinator - System Tests</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .test-section {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-results {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 5px solid #ddd;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .pending {
+            color: #888;
+            font-style: italic;
+        }
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .test-control {
+            margin: 10px 0;
+        }
+        #run-all-tests {
+            background-color: #28a745;
+            padding: 10px 15px;
+            font-size: 1.1em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Camping Coordinator System Tests</h1>
+    <p>This page runs through a series of tests to verify the functionality of the Camping Coordinator app.</p>
+    
+    <div class="test-control">
+        <button id="run-all-tests">Run All Tests</button>
+        <span id="global-status" class="pending">Ready to run tests</span>
+    </div>
+    
+    <div class="test-section">
+        <h2>1. Database Connection Test</h2>
+        <p>Verify that the app can successfully connect to the Neon PostgreSQL database.</p>
+        <button id="test-db-connection">Run Test</button>
+        <div id="db-connection-results" class="test-results pending">Not yet tested</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. User Selection Test</h2>
+        <p>Verify that the app allows selection of each user.</p>
+        <div class="test-control">
+            <button id="test-user-jack">Test Jack</button>
+            <button id="test-user-payton">Test Payton</button>
+            <button id="test-user-nick">Test Nick</button>
+            <button id="test-user-alyssa">Test Alyssa</button>
+        </div>
+        <div id="user-selection-results" class="test-results pending">Not yet tested</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Preference Selection Test</h2>
+        <p>Verify that preference options (Prefer Not, No, Clear) can be selected.</p>
+        <div class="test-control">
+            <button id="test-pref-prefer-not">Test "Prefer Not"</button>
+            <button id="test-pref-no">Test "No"</button>
+            <button id="test-pref-clear">Test "Clear"</button>
+        </div>
+        <div id="preference-selection-results" class="test-results pending">Not yet tested</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Date Preference Setting Test</h2>
+        <p>Test setting preferences for specific dates.</p>
+        <div class="test-control">
+            <select id="test-date-user">
+                <option value="">--Select User--</option>
+                <option value="Jack">Jack</option>
+                <option value="Payton">Payton</option>
+                <option value="Nick">Nick</option>
+                <option value="Alyssa">Alyssa</option>
+            </select>
+            <select id="test-date-pref">
+                <option value="">--Select Preference--</option>
+                <option value="prefer_not">Prefer Not</option>
+                <option value="no">No</option>
+            </select>
+            <input type="date" id="test-date" min="2025-05-01" max="2025-08-31" value="2025-05-15">
+            <button id="test-set-date-pref">Set Preference</button>
+        </div>
+        <div id="date-setting-results" class="test-results pending">Not yet tested</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Preference Clearing Test</h2>
+        <p>Test clearing preferences for specific dates.</p>
+        <div class="test-control">
+            <select id="test-clear-user">
+                <option value="">--Select User--</option>
+                <option value="Jack">Jack</option>
+                <option value="Payton">Payton</option>
+                <option value="Nick">Nick</option>
+                <option value="Alyssa">Alyssa</option>
+            </select>
+            <input type="date" id="test-clear-date" min="2025-05-01" max="2025-08-31" value="2025-05-15">
+            <button id="test-clear-date-pref">Clear Preference</button>
+        </div>
+        <div id="clear-pref-results" class="test-results pending">Not yet tested</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>6. Data Persistence Test</h2>
+        <p>Verify preferences are saved to and retrieved from the database.</p>
+        <div class="test-control">
+            <button id="test-fetch-prefs">Fetch All Preferences</button>
+        </div>
+        <div id="fetch-results" class="test-results pending">Not yet tested</div>
+        <table id="preferences-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Date</th>
+                    <th>Preference</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Will be populated by test -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Test 1: Database Connection
+            document.getElementById('test-db-connection').addEventListener('click', async () => {
+                const resultsDiv = document.getElementById('db-connection-results');
+                resultsDiv.className = 'test-results pending';
+                resultsDiv.textContent = 'Testing database connection...';
+                
+                try {
+                    const response = await fetch('/api/preferences');
+                    if (response.ok) {
+                        resultsDiv.className = 'test-results success';
+                        resultsDiv.textContent = '✅ Database connection successful. API returned status: ' + response.status;
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = '❌ API error: ' + response.status + ' - ' + response.statusText;
+                    }
+                } catch (error) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Connection error: ' + error.message;
+                }
+            });
+            
+            // Test 2: User Selection
+            const testUserButtons = [
+                document.getElementById('test-user-jack'),
+                document.getElementById('test-user-payton'),
+                document.getElementById('test-user-nick'),
+                document.getElementById('test-user-alyssa')
+            ];
+            
+            testUserButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const userName = button.id.split('-')[2]; // Extract name from button ID
+                    const resultsDiv = document.getElementById('user-selection-results');
+                    
+                    // Find the user select dropdown from main app
+                    const userSelect = document.querySelector('#user-select') || window.opener?.document.querySelector('#user-select');
+                    
+                    if (userSelect) {
+                        // Set the value
+                        userSelect.value = userName.charAt(0).toUpperCase() + userName.slice(1);
+                        
+                        // Create and dispatch change event
+                        const event = new Event('change', { bubbles: true });
+                        userSelect.dispatchEvent(event);
+                        
+                        resultsDiv.className = 'test-results success';
+                        resultsDiv.textContent = `✅ Successfully selected user: ${userName}`;
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = '❌ Could not find user selection dropdown. Are you in the correct context?';
+                    }
+                });
+            });
+            
+            // Test 3: Preference Selection
+            const prefButtons = [
+                document.getElementById('test-pref-prefer-not'),
+                document.getElementById('test-pref-no'),
+                document.getElementById('test-pref-clear')
+            ];
+            
+            prefButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const prefType = button.id.split('-').slice(2).join('-'); // Extract pref from button ID
+                    const resultsDiv = document.getElementById('preference-selection-results');
+                    
+                    // Find the preference radio buttons from main app
+                    const prefRadios = document.querySelectorAll('input[name="preference"]') || 
+                                       window.opener?.document.querySelectorAll('input[name="preference"]');
+                    
+                    if (prefRadios && prefRadios.length > 0) {
+                        // Find the right radio button for this preference
+                        const targetRadio = Array.from(prefRadios).find(radio => radio.value === prefType);
+                        
+                        if (targetRadio) {
+                            // Set the radio button
+                            targetRadio.checked = true;
+                            
+                            // Create and dispatch change event
+                            const event = new Event('change', { bubbles: true });
+                            targetRadio.dispatchEvent(event);
+                            
+                            resultsDiv.className = 'test-results success';
+                            resultsDiv.textContent = `✅ Successfully selected preference: ${prefType}`;
+                        } else {
+                            resultsDiv.className = 'test-results error';
+                            resultsDiv.textContent = `❌ Could not find radio button for preference: ${prefType}`;
+                        }
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = '❌ Could not find preference radio buttons. Are you in the correct context?';
+                    }
+                });
+            });
+            
+            // Test 4: Date Preference Setting
+            document.getElementById('test-set-date-pref').addEventListener('click', async () => {
+                const userName = document.getElementById('test-date-user').value;
+                const prefType = document.getElementById('test-date-pref').value;
+                const dateValue = document.getElementById('test-date').value;
+                const resultsDiv = document.getElementById('date-setting-results');
+                
+                if (!userName || !prefType || !dateValue) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Please select a user, preference type, and date';
+                    return;
+                }
+                
+                resultsDiv.className = 'test-results pending';
+                resultsDiv.textContent = `Setting preference for ${userName} on ${dateValue}...`;
+                
+                try {
+                    const response = await fetch('/api/preferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_name: userName,
+                            event_date: dateValue,
+                            preference_type: prefType
+                        }),
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.status === 'success') {
+                        resultsDiv.className = 'test-results success';
+                        resultsDiv.textContent = `✅ Successfully set preference: ${userName} - ${dateValue} - ${prefType}`;
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = `❌ Error setting preference: ${result.message || response.statusText}`;
+                    }
+                } catch (error) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Error setting preference: ' + error.message;
+                }
+            });
+            
+            // Test 5: Preference Clearing
+            document.getElementById('test-clear-date-pref').addEventListener('click', async () => {
+                const userName = document.getElementById('test-clear-user').value;
+                const dateValue = document.getElementById('test-clear-date').value;
+                const resultsDiv = document.getElementById('clear-pref-results');
+                
+                if (!userName || !dateValue) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Please select a user and date';
+                    return;
+                }
+                
+                resultsDiv.className = 'test-results pending';
+                resultsDiv.textContent = `Clearing preference for ${userName} on ${dateValue}...`;
+                
+                try {
+                    const response = await fetch('/api/preferences', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_name: userName,
+                            event_date: dateValue,
+                            preference_type: 'clear'
+                        }),
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.status === 'success') {
+                        resultsDiv.className = 'test-results success';
+                        resultsDiv.textContent = `✅ Successfully cleared preference: ${userName} - ${dateValue}`;
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = `❌ Error clearing preference: ${result.message || response.statusText}`;
+                    }
+                } catch (error) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Error clearing preference: ' + error.message;
+                }
+            });
+            
+            // Test 6: Data Persistence and Retrieval
+            document.getElementById('test-fetch-prefs').addEventListener('click', async () => {
+                const resultsDiv = document.getElementById('fetch-results');
+                const tableBody = document.querySelector('#preferences-table tbody');
+                
+                resultsDiv.className = 'test-results pending';
+                resultsDiv.textContent = 'Fetching preferences from database...';
+                tableBody.innerHTML = '';
+                
+                try {
+                    const response = await fetch('/api/preferences');
+                    
+                    if (response.ok) {
+                        const preferences = await response.json();
+                        
+                        if (preferences && preferences.length > 0) {
+                            resultsDiv.className = 'test-results success';
+                            resultsDiv.textContent = `✅ Successfully retrieved ${preferences.length} preference(s) from database`;
+                            
+                            // Populate the table
+                            preferences.forEach(pref => {
+                                const row = tableBody.insertRow();
+                                row.insertCell(0).textContent = pref.user_name;
+                                row.insertCell(1).textContent = pref.event_date;
+                                row.insertCell(2).textContent = pref.preference_type;
+                            });
+                        } else {
+                            resultsDiv.className = 'test-results success';
+                            resultsDiv.textContent = '✅ No preferences found in database (this is normal if none have been set)';
+                        }
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = '❌ Error fetching preferences: ' + response.statusText;
+                    }
+                } catch (error) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Error fetching preferences: ' + error.message;
+                }
+            });
+            
+            // Run All Tests
+            document.getElementById('run-all-tests').addEventListener('click', async () => {
+                const globalStatus = document.getElementById('global-status');
+                globalStatus.className = 'pending';
+                globalStatus.textContent = 'Running all tests...';
+                
+                // Test 1: Database connection
+                document.getElementById('test-db-connection').click();
+                
+                // Wait a moment before proceeding
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Test 6: Fetch preferences (data persistence)
+                document.getElementById('test-fetch-prefs').click();
+                
+                // Update overall status
+                setTimeout(() => {
+                    const errors = document.querySelectorAll('.test-results.error');
+                    if (errors.length > 0) {
+                        globalStatus.className = 'error';
+                        globalStatus.textContent = `❌ ${errors.length} test(s) failed. Check details above.`;
+                    } else {
+                        globalStatus.className = 'success';
+                        globalStatus.textContent = '✅ All automated tests passed!';
+                    }
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
