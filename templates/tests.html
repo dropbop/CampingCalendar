@@ -75,6 +75,13 @@
         th {
             background-color: #f2f2f2;
         }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            max-height: 300px;
+        }
     </style>
 </head>
 <body>
@@ -174,6 +181,22 @@
                 <!-- Will be populated by test -->
             </tbody>
         </table>
+    </div>
+
+    <!-- New test sections for database diagnostics -->
+    <div class="test-section">
+        <h2>7. Database Schema Test</h2>
+        <p>Check the actual database schema to verify table and column structure.</p>
+        <button id="test-db-schema">Check Database Schema</button>
+        <div id="db-schema-results" class="test-results pending">Not yet tested</div>
+        <pre id="schema-details" style="display:none;"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>8. Test Minimal Insert</h2>
+        <p>Test a minimal insert operation with hardcoded values.</p>
+        <button id="test-minimal-insert">Run Test Insert</button>
+        <div id="minimal-insert-results" class="test-results pending">Not yet tested</div>
     </div>
 
     <script>
@@ -310,6 +333,10 @@
                     } else {
                         resultsDiv.className = 'test-results error';
                         resultsDiv.textContent = `❌ Error setting preference: ${result.message || response.statusText}`;
+                        
+                        if (result.error) {
+                            resultsDiv.textContent += ` (${result.error})`;
+                        }
                     }
                 } catch (error) {
                     resultsDiv.className = 'test-results error';
@@ -400,6 +427,60 @@
                 }
             });
             
+            // Test 7: Database Schema
+            document.getElementById('test-db-schema').addEventListener('click', async () => {
+                const resultsDiv = document.getElementById('db-schema-results');
+                const schemaDetailsElement = document.getElementById('schema-details');
+                
+                resultsDiv.className = 'test-results pending';
+                resultsDiv.textContent = 'Fetching database schema...';
+                schemaDetailsElement.style.display = 'none';
+                
+                try {
+                    const response = await fetch('/database-schema');
+                    const result = await response.json();
+                    
+                    if (response.ok && result.status === 'success') {
+                        resultsDiv.className = 'test-results success';
+                        resultsDiv.textContent = '✅ Successfully retrieved database schema';
+                        
+                        // Display schema details
+                        schemaDetailsElement.textContent = JSON.stringify(result, null, 2);
+                        schemaDetailsElement.style.display = 'block';
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = `❌ Error retrieving schema: ${result.message || response.statusText}`;
+                    }
+                } catch (error) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Error retrieving schema: ' + error.message;
+                }
+            });
+            
+            // Test 8: Minimal Insert Test
+            document.getElementById('test-minimal-insert').addEventListener('click', async () => {
+                const resultsDiv = document.getElementById('minimal-insert-results');
+                
+                resultsDiv.className = 'test-results pending';
+                resultsDiv.textContent = 'Testing minimal insert operation...';
+                
+                try {
+                    const response = await fetch('/test-insert');
+                    const result = await response.json();
+                    
+                    if (response.ok && result.status === 'success') {
+                        resultsDiv.className = 'test-results success';
+                        resultsDiv.textContent = '✅ ' + result.message;
+                    } else {
+                        resultsDiv.className = 'test-results error';
+                        resultsDiv.textContent = `❌ ${result.message}: ${result.error || ''}`;
+                    }
+                } catch (error) {
+                    resultsDiv.className = 'test-results error';
+                    resultsDiv.textContent = '❌ Error with test insert: ' + error.message;
+                }
+            });
+            
             // Run All Tests
             document.getElementById('run-all-tests').addEventListener('click', async () => {
                 const globalStatus = document.getElementById('global-status');
@@ -415,6 +496,13 @@
                 // Test 6: Fetch preferences (data persistence)
                 document.getElementById('test-fetch-prefs').click();
                 
+                // Test 7: Database schema
+                document.getElementById('test-db-schema').click();
+                
+                // Test 8: Minimal insert
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                document.getElementById('test-minimal-insert').click();
+                
                 // Update overall status
                 setTimeout(() => {
                     const errors = document.querySelectorAll('.test-results.error');
@@ -425,7 +513,7 @@
                         globalStatus.className = 'success';
                         globalStatus.textContent = '✅ All automated tests passed!';
                     }
-                }, 2000);
+                }, 3000);
             });
         });
     </script>

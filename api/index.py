@@ -4,7 +4,7 @@ import calendar
 from datetime import date, datetime
 import logging
 import traceback
-from .db import get_preferences, save_preference, delete_preference
+from .db import get_preferences, save_preference, delete_preference, get_db_connection
 
 # Configure more detailed logging
 logging.basicConfig(
@@ -179,6 +179,118 @@ def database_status():
             "status": "error",
             "message": f"Database connection error: {str(e)}"
         }), 500
+
+@app.route('/database-schema')
+def database_schema():
+    """Endpoint to check the actual database schema."""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Connection failed"}), 500
+        
+    try:
+        with conn.cursor() as cursor:
+            # Check if table exists
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'preferences'
+                )
+            """)
+            table_exists = cursor.fetchone()[0]
+            
+            if not table_exists:
+                return jsonify({"status": "error", "message": "Table does not exist"}), 404
+                
+            # Get column information
+            cursor.execute("""
+                SELECT column_name, data_type, is_nullable, column_default
+                FROM information_schema.columns
+                WHERE table_name = 'preferences'
+            """)
+            columns = [dict(zip(['column_name', 'data_type', 'is_nullable', 'column_default'], row)) 
+                      for row in cursor.fetchall()]
+            
+            # Try to get check constraints
+            cursor.execute("""
+                SELECT pgc.conname AS constraint_name, 
+                       pg_get_constraintdef(pgc.oid) AS constraint_definition
+                FROM pg_constraint pgc
+                JOIN pg_namespace nsp ON nsp.oid = pgc.connamespace
+                JOIN pg_class cls ON pgc.conrelid = cls.oid
+                WHERE cls.relname = 'preferences'
+                  AND pgc.contype = 'c'
+            """)
+            check_constraints = [dict(zip(['constraint_name', 'constraint_definition'], row)) 
+                               for row in cursor.fetchall()]
+            
+            # Get foreign keys and other constraints
+            cursor.execute("""
+                SELECT tc.constraint_name, tc.constraint_type, kcu.column_name
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu 
+                  ON tc.constraint_name = kcu.constraint_name
+                WHERE tc.table_name = 'preferences'
+            """)
+            constraints = [dict(zip(['constraint_name', 'constraint_type', 'column_name'], row)) 
+                          for row in cursor.fetchall()]
+            
+            return jsonify({
+                "status": "success",
+                "table_exists": table_exists,
+                "columns": columns,
+                "check_constraints": check_constraints,
+                "constraints": constraints
+            })
+    except Exception as e:
+        error_details = traceback.format_exc()
+        logger.error(f"Error checking schema: {e}\n{error_details}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/test-insert')
+def test_insert():
+    """Test a minimal insert operation."""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Connection failed"}), 500
+        
+    try:
+        with conn.cursor() as cursor:
+            # First try to delete any existing preference
+            cursor.execute("""
+                DELETE FROM preferences
+                WHERE user_name = 'Jack' AND event_date = '2025-05-15'
+            """)
+            
+            # Then try a simple insert
+            cursor.execute("""
+                INSERT INTO preferences (user_name, event_date, preference_type)
+                VALUES ('Jack', '2025-05-15', 'prefer_not')
+            """)
+            
+            # Verify the insert worked
+            cursor.execute("""
+                SELECT count(*) FROM preferences 
+                WHERE user_name = 'Jack' AND event_date = '2025-05-15'
+            """)
+            count = cursor.fetchone()[0]
+            
+            return jsonify({
+                "status": "success", 
+                "message": "Test insert successful", 
+                "count": count
+            })
+    except Exception as e:
+        error_details = traceback.format_exc()
+        logger.error(f"Test insert failed: {e}\n{error_details}")
+        return jsonify({
+            "status": "error", 
+            "message": "Test insert failed", 
+            "error": str(e)
+        }), 500
+    finally:
+        conn.close()
 
 # This is needed if running locally with `python api/index.py`
 if __name__ == '__main__':
