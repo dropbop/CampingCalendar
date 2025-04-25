@@ -11,9 +11,10 @@ h1, h2 {
 
 .controls {
     display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 15px 20px; /* Row gap, Column gap */
     margin-bottom: 30px;
     background-color: #fff;
     padding: 15px;
@@ -21,14 +22,58 @@ h1, h2 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.controls label {
+.controls label { /* Applies to "Your Name:" and "Preference:" */
     font-weight: bold;
+    margin-bottom: 5px; /* Add some space below labels if controls wrap */
 }
 
-.preference-select label {
+/* Remove old style for radio labels */
+/* .preference-select label {
     margin-left: 10px;
     font-weight: normal;
+} */
+
+/* --- New Button Group Styles --- */
+.preference-select {
+    display: flex; /* Align label and button group */
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap; /* Allow wrapping within the preference section itself */
 }
+
+.button-group {
+    display: inline-flex; /* Makes buttons sit side-by-side */
+    border-radius: 5px;
+    overflow: hidden; /* Keeps rounded corners neat */
+    border: 1px solid #ccc;
+    margin-top: 5px; /* Align better if label wraps */
+}
+
+.pref-button {
+    padding: 8px 15px;
+    border: none;
+    background-color: #eee;
+    color: #333;
+    cursor: pointer;
+    border-right: 1px solid #ccc; /* Separator lines */
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 0.9em;
+}
+
+.button-group .pref-button:last-child {
+    border-right: none; /* No border on the last button */
+}
+
+.pref-button:hover {
+    background-color: #ddd;
+}
+
+.pref-button.active { /* Class added by JavaScript */
+    background-color: #007bff;
+    color: white;
+}
+/* --- End Button Group Styles --- */
+
 
 #calendar-container {
     display: grid;
@@ -71,16 +116,18 @@ h1, h2 {
     flex-direction: column;
     justify-content: space-between; /* Pushes indicators down */
     font-size: 0.9em;
+    border-radius: 3px; /* Slight rounding */
 }
 
 .day.empty {
-    background-color: #eee;
-    border: 1px solid #eee;
+    background-color: #f0f0f0; /* Match weekday slightly */
+    border: 1px solid #e0e0e0;
     cursor: default;
 }
 
 .day:not(.empty):hover {
     background-color: #e9f5ff;
+    border-color: #cceaff;
 }
 
 .indicators {
@@ -90,6 +137,7 @@ h1, h2 {
     flex-wrap: wrap;
     justify-content: center;
     gap: 2px;
+    min-height: 10px; /* Reserve a little space even if empty */
 }
 
 .indicator {
@@ -103,46 +151,82 @@ h1, h2 {
 /* User-specific colors (adjust as needed) */
 .indicator.jack { background-color: #007bff; } /* Blue */
 .indicator.payton { background-color: #28a745; } /* Green */
-.indicator.nick { background-color: #ffc107; } /* Yellow - text black */
+.indicator.nick { background-color: #ffc107; color: #333;} /* Yellow - text black */
 .indicator.alyssa { background-color: #dc3545; } /* Red */
 
 /* Preference specific styles within indicators */
 .indicator.prefer_not {
-   opacity: 0.7; /* Slightly faded for 'prefer_not' */
+   opacity: 0.75; /* Slightly faded for 'prefer_not' */
+   /* Add a subtle border to distinguish from 'clear' state */
+   /* border: 1px dashed rgba(0,0,0,0.2); */
 }
-.indicator.nick.prefer_not, .indicator.nick.no { color: #333; } /* Ensure contrast for yellow */
 
 .indicator.no {
-   /* Maybe add a border or different shape for 'no' */
+   /* Add a border or different visual cue for 'no' */
    border: 1px solid rgba(0,0,0,0.5);
+   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5); /* Inner highlight */
 }
-
-
-/* Alternative: Style the day itself based on logged-in user's preference (if needed) */
-/* Example:
-.day[data-jack="prefer_not"] { background-color: #ffeecc; }
-.day[data-jack="no"] { background-color: #ffcccc; }
-*/
 
 #message-area {
     margin-top: 20px;
+    padding: 10px;
     text-align: center;
     font-weight: bold;
     min-height: 1.2em;
+    border-radius: 5px;
 }
 
-.success {
-    color: green;
+.message-area.success { /* Use class on container now */
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
 }
 
-.error {
-    color: red;
+.message-area.error { /* Use class on container now */
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
 }
+
+.message-area.info { /* Use class on container now */
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+}
+
 
 .day.weekday {
-    background-color: #f0f0f0;  /* Light gray background for Mon-Thu */
+    background-color: #f8f9fa;  /* Lighter gray */
 }
 
-.day.weekday:hover {
-    background-color: #e0e0e0;  /* Slightly darker gray on hover */
+.day.weekday:hover:not(.empty) {
+    background-color: #e9ecef;  /* Slightly darker gray on hover */
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 600px) {
+    .controls {
+        flex-direction: column; /* Stack controls vertically */
+        align-items: stretch; /* Stretch items */
+        gap: 15px;
+    }
+    .preference-select {
+        justify-content: center; /* Center buttons when stacked */
+    }
+    .button-group {
+        width: 100%; /* Make button group take full width */
+        display: flex; /* Ensure flex properties apply */
+    }
+    .pref-button {
+        flex-grow: 1; /* Make buttons expand equally */
+        text-align: center;
+    }
+    #calendar-container {
+        grid-template-columns: 1fr; /* Single column for months */
+        gap: 20px;
+    }
+    .day {
+        min-height: 50px;
+        padding: 5px;
+    }
 }

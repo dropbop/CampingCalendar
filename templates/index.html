@@ -19,19 +19,24 @@
             {% endfor %}
         </select>
 
+        <!-- Modified Preference Selection Area -->
         <div class="preference-select">
             <label>Preference:</label>
-            <label><input type="radio" name="preference" value="prefer_not"> Prefer Not</label>
-            <label><input type="radio" name="preference" value="no"> No</label>
-            <label><input type="radio" name="preference" value="clear"> Clear</label>
+            <div class="button-group" id="preference-buttons">
+                <button type="button" class="pref-button" data-preference="prefer_not">Prefer Not</button>
+                <button type="button" class="pref-button" data-preference="no">No</button>
+                <button type="button" class="pref-button" data-preference="clear">Clear</button>
+            </div>
+            <!-- No hidden input needed if managing state purely in JS -->
         </div>
+        <!-- End of Modified Preference Selection Area -->
+
     </div>
 
     <div id="calendar-container">
         {% for month_data in calendar_months %}
         <div class="month">
             <h2>{{ month_data.month_name }} {{ month_data.year }}</h2>
-            <!-- Start of replaced section -->
             <div class="calendar-grid">
                 <div class="day-name">Sun</div>
                 <div class="day-name">Mon</div>
@@ -40,7 +45,7 @@
                 <div class="day-name">Thu</div>
                 <div class="day-name">Fri</div>
                 <div class="day-name">Sat</div>
-                
+
                 {# Render the calendar grid #}
                 {% for week in month_data.calendar_grid %}
                     {% for day in week %}
@@ -49,8 +54,8 @@
                         {% else %}
                             {% set day_str = "%04d-%02d-%02d"|format(month_data.year, month_data.month, day) %}
                             {% set day_prefs = preferences.get(day_str, {}) %}
-                            <div 
-                                class="day{% if loop.index0 >= 1 and loop.index0 <= 4 %} weekday{% endif %}" 
+                            <div
+                                class="day{% if loop.index0 >= 1 and loop.index0 <= 4 %} weekday{% endif %}"
                                 data-date="{{ day_str }}"
                                 {% for user, ptype in day_prefs.items() %}
                                     data-{{ user.lower() }}="{{ ptype }}"
@@ -67,7 +72,6 @@
                     {% endfor %}
                 {% endfor %}
             </div>
-            <!-- End of replaced section -->
         </div>
         {% endfor %}
     </div>
