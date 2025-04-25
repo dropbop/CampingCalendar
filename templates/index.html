@@ -11,15 +11,18 @@
     <p>Select your name, choose a preference, and click dates for May-August 2025.</p>
 
     <div class="controls">
-        <label for="user-select">Your Name:</label>
-        <select id="user-select">
-            <option value="">--Select Name--</option>
-            {% for user in users %}
-            <option value="{{ user }}">{{ user }}</option>
-            {% endfor %}
-        </select>
+        <!-- Modified User Selection Area -->
+        <div class="user-select-area">
+            <label>Your Name:</label>
+            <div class="button-group" id="user-buttons">
+                {% for user in users %}
+                <button type="button" class="user-button" data-user="{{ user }}">{{ user }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- End of Modified User Selection Area -->
 
-        <!-- Modified Preference Selection Area -->
+        <!-- Preference Selection Area (Button Group) -->
         <div class="preference-select">
             <label>Preference:</label>
             <div class="button-group" id="preference-buttons">
@@ -27,9 +30,8 @@
                 <button type="button" class="pref-button" data-preference="no">No</button>
                 <button type="button" class="pref-button" data-preference="clear">Clear</button>
             </div>
-            <!-- No hidden input needed if managing state purely in JS -->
         </div>
-        <!-- End of Modified Preference Selection Area -->
+        <!-- End of Preference Selection Area -->
 
     </div>
 
@@ -76,7 +78,7 @@
         {% endfor %}
     </div>
 
-    <div id="message-area"></div>
+    <div id="message-area" class="message-area"></div> <!-- Added base class for consistency -->
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
