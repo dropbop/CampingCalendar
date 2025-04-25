@@ -292,6 +292,59 @@ def test_insert():
     finally:
         conn.close()
 
+@app.route('/init-database')
+def init_database():
+    """Initialize the database by creating the preferences table."""
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Database connection failed"}), 500
+        
+    try:
+        with conn.cursor() as cursor:
+            # Create the preferences table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS preferences (
+                    id SERIAL PRIMARY KEY,
+                    user_name VARCHAR(50) NOT NULL CHECK (user_name IN ('Jack', 'Payton', 'Nick', 'Alyssa')),
+                    event_date DATE NOT NULL,
+                    preference_type VARCHAR(20) NOT NULL CHECK (preference_type IN ('prefer_not', 'no')), 
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    -- Ensures only one entry per user per date
+                    UNIQUE(user_name, event_date)
+                )
+            """)
+            
+            # Verify the table was created
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'preferences'
+                )
+            """)
+            table_exists = cursor.fetchone()[0]
+            
+            if table_exists:
+                return jsonify({
+                    "status": "success", 
+                    "message": "Preferences table created successfully"
+                })
+            else:
+                return jsonify({
+                    "status": "error", 
+                    "message": "Failed to verify table creation"
+                }), 500
+                
+    except Exception as e:
+        error_details = traceback.format_exc()
+        logger.error(f"Database initialization failed: {e}\n{error_details}")
+        return jsonify({
+            "status": "error", 
+            "message": "Database initialization failed", 
+            "error": str(e)
+        }), 500
+    finally:
+        conn.close()
+
 # This is needed if running locally with `python api/index.py`
 if __name__ == '__main__':
     # Make sure debug=False for production environments
