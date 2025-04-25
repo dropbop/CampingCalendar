@@ -114,6 +114,15 @@ def get_all_preferences_api():
         logging.error(f"Error fetching preferences via API: {e}")
         return jsonify({"status": "error", "message": "Failed to fetch preferences"}), 500
 
+@app.route('/tests')
+def tests():
+    """Renders the test page."""
+    try:
+        return render_template('tests.html')
+    except Exception as e:
+        logging.error(f"Error rendering tests page: {e}")
+        return "An error occurred loading the tests page.", 500
+
 # This is needed if running locally with `python api/index.py`
 # Vercel uses a WSGI server specified elsewhere
 if __name__ == '__main__':
