@@ -163,7 +163,7 @@ h1, h2 {
 
 /* Preference specific styles within indicators */
 .indicator.prefer_not {
-   opacity: 0.75;
+   opacity: 0.25;
 }
 
 .indicator.no {
