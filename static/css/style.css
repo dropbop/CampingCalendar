@@ -138,3 +138,11 @@ h1, h2 {
 .error {
     color: red;
 }
+
+.day.weekday {
+    background-color: #f0f0f0;  /* Light gray background for Mon-Thu */
+}
+
+.day.weekday:hover {
+    background-color: #e0e0e0;  /* Slightly darker gray on hover */
+}

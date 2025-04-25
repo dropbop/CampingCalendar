@@ -31,14 +31,15 @@
         {% for month_data in calendar_months %}
         <div class="month">
             <h2>{{ month_data.month_name }} {{ month_data.year }}</h2>
+            <!-- Start of replaced section -->
             <div class="calendar-grid">
+                <div class="day-name">Sun</div>
                 <div class="day-name">Mon</div>
                 <div class="day-name">Tue</div>
                 <div class="day-name">Wed</div>
                 <div class="day-name">Thu</div>
                 <div class="day-name">Fri</div>
                 <div class="day-name">Sat</div>
-                <div class="day-name">Sun</div>
                 
                 {# Render the calendar grid #}
                 {% for week in month_data.calendar_grid %}
@@ -49,14 +50,13 @@
                             {% set day_str = "%04d-%02d-%02d"|format(month_data.year, month_data.month, day) %}
                             {% set day_prefs = preferences.get(day_str, {}) %}
                             <div 
-                                class="day" 
+                                class="day{% if loop.index0 >= 1 and loop.index0 <= 4 %} weekday{% endif %}" 
                                 data-date="{{ day_str }}"
                                 {% for user, ptype in day_prefs.items() %}
                                     data-{{ user.lower() }}="{{ ptype }}"
                                 {% endfor %}
                                 >
                                 {{ day }}
-                                {# Optional: Add visual indicators directly here if needed #}
                                 <div class="indicators">
                                    {% for user, ptype in day_prefs.items() %}
                                        <span class="indicator {{ user.lower() }} {{ ptype }}">{{ user[0] }}</span>
@@ -67,6 +67,7 @@
                     {% endfor %}
                 {% endfor %}
             </div>
+            <!-- End of replaced section -->
         </div>
         {% endfor %}
     </div>

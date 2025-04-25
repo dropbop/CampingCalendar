@@ -23,6 +23,8 @@ VALID_PREFERENCES = ['prefer_not', 'no', 'clear']
 def get_calendar_data(year, month):
     """Generates calendar data for a given month and year."""
     try:
+        # Set calendar to start with Sunday (6)
+        calendar.setfirstweekday(6)  # 6 is Sunday
         month_calendar = calendar.monthcalendar(year, month)
         month_name = calendar.month_name[month]
         # Flatten list and filter out 0s (days not in the month)
