@@ -1,147 +1,190 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Removed userSelect element reference ---
-    // const userSelect = document.getElementById('user-select');
-    const userButtonsContainer = document.getElementById('user-buttons'); // Get user button group
+    const userButtonsContainer = document.getElementById('user-buttons');
     const preferenceButtonsContainer = document.getElementById('preference-buttons');
     const calendarContainer = document.getElementById('calendar-container');
     const messageArea = document.getElementById('message-area');
 
-    let selectedUser = ''; // Initialize user
-    let selectedPreference = ''; // Initialize preference
+    // Auth UI
+    const authStatus = document.getElementById('auth-status');
+    const loginForm = document.getElementById('login-form');
+    const logoutBtn = document.getElementById('logout-btn');
+    const passwordInput = document.getElementById('admin-password');
 
-    // --- Removed userSelect event listener ---
-    // userSelect.addEventListener('change', (event) => { ... });
+    let isAdmin = document.body.dataset.admin === '1';
+    let selectedUser = '';
+    let selectedPreference = '';
 
-    // --- New Event Listener for User Button Group ---
+    updateAuthUI();
+
+    async function refreshAuth() {
+        try {
+            const res = await fetch('/api/auth/status');
+            const data = await res.json();
+            isAdmin = !!data.is_admin;
+            updateAuthUI();
+        } catch (e) {
+            // If status check fails, stay conservative: treat as locked
+            isAdmin = false;
+            updateAuthUI();
+        }
+    }
+
+    function updateAuthUI() {
+        if (isAdmin) {
+            authStatus.textContent = 'Unlocked (edit mode)';
+            if (loginForm) loginForm.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = '';
+        } else {
+            authStatus.textContent = 'Read-only (locked)';
+            if (loginForm) loginForm.style.display = '';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+        }
+    }
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pwd = passwordInput.value || '';
+            if (!pwd) {
+                showMessage('Enter a password to unlock.', 'error');
+                return;
+            }
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    passwordInput.value = '';
+                    showMessage(data.message || 'Unlocked.', 'success');
+                    await refreshAuth();
+                } else {
+                    showMessage(data.message || 'Invalid password.', 'error');
+                }
+            } catch (err) {
+                showMessage('Network error while unlocking.', 'error');
+            }
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/auth/logout', { method: 'POST' });
+                const data = await res.json();
+                if (res.ok) {
+                    showMessage(data.message || 'Locked.', 'success');
+                    await refreshAuth();
+                } else {
+                    showMessage('Failed to lock.', 'error');
+                }
+            } catch (err) {
+                showMessage('Network error while locking.', 'error');
+            }
+        });
+    }
+
     if (userButtonsContainer) {
         userButtonsContainer.addEventListener('click', (event) => {
-            // Check if a user button was clicked
-            if (event.target.classList.contains('user-button')) {
-                const clickedButton = event.target;
-                const userName = clickedButton.dataset.user;
+            const clickedButton = event.target.closest('.user-button');
+            if (!clickedButton) return;
 
-                // If already active, do nothing (or allow deselect)
-                if (clickedButton.classList.contains('active')) {
-                    return; // Currently prevents deselecting user
-                }
-
-                // Remove 'active' class from all user buttons
-                userButtonsContainer.querySelectorAll('.user-button').forEach(button => {
-                    button.classList.remove('active');
-                });
-
-                // Add 'active' class to the clicked button
-                clickedButton.classList.add('active');
-
-                // Update the selected user state
-                selectedUser = userName;
-                clearMessage(); // Clear message on user change
-                console.log("Selected User:", selectedUser); // For debugging
+            if (!isAdmin) {
+                showMessage('Read-only mode. Unlock to make changes.', 'error');
+                return;
             }
+
+            if (clickedButton.classList.contains('active')) return;
+
+            userButtonsContainer.querySelectorAll('.user-button').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            selectedUser = clickedButton.dataset.user;
+            clearMessage();
         });
     }
-    // --- End New User Button Listener ---
 
-
-    // --- Event Listener for Preference Button Group (Unchanged) ---
     if (preferenceButtonsContainer) {
         preferenceButtonsContainer.addEventListener('click', (event) => {
-            if (event.target.classList.contains('pref-button')) {
-                const clickedButton = event.target;
-                const preferenceValue = clickedButton.dataset.preference;
+            const clickedButton = event.target.closest('.pref-button');
+            if (!clickedButton) return;
 
-                if (clickedButton.classList.contains('active')) {
-                    // Optional: Allow deselecting preference
-                    // clickedButton.classList.remove('active');
-                    // selectedPreference = '';
-                    // clearMessage();
-                    return; // Currently prevents deselecting
-                }
-
-                preferenceButtonsContainer.querySelectorAll('.pref-button').forEach(button => {
-                    button.classList.remove('active');
-                });
-                clickedButton.classList.add('active');
-                selectedPreference = preferenceValue;
-                clearMessage();
-                console.log("Selected Preference:", selectedPreference); // For debugging
+            if (!isAdmin) {
+                showMessage('Read-only mode. Unlock to make changes.', 'error');
+                return;
             }
+
+            if (clickedButton.classList.contains('active')) return;
+
+            preferenceButtonsContainer.querySelectorAll('.pref-button').forEach(btn => btn.classList.remove('active'));
+            clickedButton.classList.add('active');
+
+            selectedPreference = clickedButton.dataset.preference;
+            clearMessage();
         });
     }
-    // --- End Preference Button Listener ---
 
-
-    // --- Calendar Click Listener (Validation part uses variables directly) ---
     calendarContainer.addEventListener('click', async (event) => {
         const dayElement = event.target.closest('.day:not(.empty)');
+        if (!dayElement) return;
 
-        if (dayElement) {
-            const eventDate = dayElement.dataset.date;
+        if (!isAdmin) {
+            showMessage('Read-only mode. Unlock to make changes.', 'error');
+            return;
+        }
 
-            // Validate selection using state variables
-            if (!selectedUser) {
-                showMessage('Please select your name first.', 'error');
-                return;
+        const eventDate = dayElement.dataset.date;
+        if (!selectedUser) {
+            showMessage('Please select your name first.', 'error');
+            return;
+        }
+        if (!selectedPreference) {
+            showMessage('Please select a preference (Prefer Not, No, or Clear).', 'error');
+            return;
+        }
+
+        showMessage('Updating...', 'info');
+
+        const dataToSend = {
+            user_name: selectedUser,
+            event_date: eventDate,
+            preference_type: selectedPreference
+        };
+
+        try {
+            const response = await fetch('/api/preferences', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSend),
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                showMessage(result.message || `Preference set for ${eventDate}`, 'success');
+                updateDayVisualState(dayElement, selectedUser, selectedPreference);
+            } else {
+                let errorMsg = result?.message || `Error: ${response.status} - ${response.statusText}`;
+                showMessage(errorMsg, 'error');
             }
-            if (!selectedPreference) {
-                showMessage('Please select a preference (Prefer Not, No, or Clear).', 'error');
-                return;
-            }
-
-            showMessage('Updating...', 'info');
-
-            const dataToSend = {
-                user_name: selectedUser,
-                event_date: eventDate,
-                preference_type: selectedPreference
-            };
-
-            try {
-                const response = await fetch('/api/preferences', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(dataToSend),
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.status === 'success') {
-                    showMessage(result.message || `Preference set for ${eventDate}`, 'success');
-                    updateDayVisualState(dayElement, selectedUser, selectedPreference);
-                } else {
-                     let errorMsg = 'Failed to update preference.';
-                     if (result && result.message) {
-                         errorMsg = result.message;
-                     } else if (!response.ok) {
-                         errorMsg = `Error: ${response.status} - ${response.statusText}`;
-                     }
-                     showMessage(errorMsg, 'error');
-                }
-
-            } catch (error) {
-                console.error('Error updating preference:', error);
-                showMessage('A network or server error occurred. Please try again.', 'error');
-            }
+        } catch (error) {
+            console.error('Error updating preference:', error);
+            showMessage('A network or server error occurred. Please try again.', 'error');
         }
     });
-    // --- End Calendar Click Listener ---
 
-
-    // --- Helper Functions (Unchanged, but check updateDayVisualState logic below) ---
     function updateDayVisualState(dayElement, userName, preferenceType) {
         const userKey = userName.toLowerCase();
         const indicatorContainer = dayElement.querySelector('.indicators');
         if (!indicatorContainer) {
-             console.error("Could not find indicator container for day:", dayElement.dataset.date);
-             return;
-         }
+            console.error("Could not find indicator container for day:", dayElement.dataset.date);
+            return;
+        }
 
         const existingIndicator = indicatorContainer.querySelector(`.indicator.${userKey}`);
-        if (existingIndicator) {
-            existingIndicator.remove();
-        }
+        if (existingIndicator) existingIndicator.remove();
 
         if (preferenceType === 'clear') {
             delete dayElement.dataset[userKey];
@@ -152,28 +195,19 @@ document.addEventListener('DOMContentLoaded', () => {
             newIndicator.classList.add('indicator', userKey, preferenceType);
             newIndicator.textContent = userName[0];
             indicatorContainer.appendChild(newIndicator);
-
-            // CSS should handle Nick's text color now based on classes
-            // .indicator.nick.prefer_not, .indicator.nick.no { color: #333; }
-            // So, no specific JS style manipulation needed here ideally.
         }
-        // Ensure indicators are ordered consistently if needed (more complex)
-        // Example: sortIndicators(indicatorContainer);
     }
 
     function showMessage(message, type = 'info') {
         messageArea.textContent = message;
         messageArea.className = `message-area ${type}`;
-
-         if (type === 'success' || type === 'error') {
-             setTimeout(clearMessage, 4000);
-         }
+        if (type === 'success' || type === 'error') {
+            setTimeout(clearMessage, 4000);
+        }
     }
 
-     function clearMessage() {
-         messageArea.textContent = '';
-         messageArea.className = 'message-area'; // Reset class to base
-     }
-     // --- End Helper Functions ---
-
+    function clearMessage() {
+        messageArea.textContent = '';
+        messageArea.className = 'message-area';
+    }
 });
