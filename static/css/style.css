@@ -251,3 +251,39 @@ h1, h2 {
         padding: 5px;
     }
 }
+
+/* --- Auth bar --- */
+.auth-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 0 auto 16px auto;
+    max-width: 900px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+}
+.auth-status {
+    font-weight: 600;
+    color: #333;
+}
+.auth-login input[type="password"] {
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.auth-login button,
+.auth-logout {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.auth-login button:hover,
+.auth-logout:hover {
+    background: #e9ecef;
+}
