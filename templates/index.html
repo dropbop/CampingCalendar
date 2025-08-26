@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +17,11 @@
             <button type="submit">Unlock</button>
         </form>
         <button id="logout-btn" class="auth-logout" {% if not is_admin %}style="display:none"{% endif %}>Lock</button>
+
+        <!-- NEW: Theme toggle -->
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="true" aria-label="Toggle dark mode">
+            🌙 Dark mode
+        </button>
     </div>
 
     <h1>Camping Date Coordinator</h1>
