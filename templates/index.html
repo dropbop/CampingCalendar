@@ -6,12 +6,22 @@
     <title>Camping Coordinator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body data-admin="{{ '1' if is_admin else '0' }}">
+    <div id="auth-bar" class="auth-bar">
+        <span id="auth-status" class="auth-status">
+            {{ 'Unlocked (edit mode)' if is_admin else 'Read-only (locked)' }}
+        </span>
+        <form id="login-form" class="auth-login" {% if is_admin %}style="display:none"{% endif %}>
+            <input type="password" id="admin-password" placeholder="Password" autocomplete="current-password" />
+            <button type="submit">Unlock</button>
+        </form>
+        <button id="logout-btn" class="auth-logout" {% if not is_admin %}style="display:none"{% endif %}>Lock</button>
+    </div>
+
     <h1>Camping Date Coordinator</h1>
     <p>Select your name, choose a preference, and click dates for May-August 2025.</p>
 
     <div class="controls">
-        <!-- Modified User Selection Area -->
         <div class="user-select-area">
             <label>Your Name:</label>
             <div class="button-group" id="user-buttons">
@@ -20,9 +30,7 @@
                 {% endfor %}
             </div>
         </div>
-        <!-- End of Modified User Selection Area -->
 
-        <!-- Preference Selection Area (Button Group) -->
         <div class="preference-select">
             <label>Preference:</label>
             <div class="button-group" id="preference-buttons">
@@ -31,8 +39,6 @@
                 <button type="button" class="pref-button" data-preference="clear">Clear</button>
             </div>
         </div>
-        <!-- End of Preference Selection Area -->
-
     </div>
 
     <div id="calendar-container">
@@ -48,7 +54,6 @@
                 <div class="day-name">Fri</div>
                 <div class="day-name">Sat</div>
 
-                {# Render the calendar grid #}
                 {% for week in month_data.calendar_grid %}
                     {% for day in week %}
                         {% if day == 0 %}
@@ -65,9 +70,9 @@
                                 >
                                 {{ day }}
                                 <div class="indicators">
-                                   {% for user, ptype in day_prefs.items() %}
-                                       <span class="indicator {{ user.lower() }} {{ ptype }}">{{ user[0] }}</span>
-                                   {% endfor %}
+                                    {% for user, ptype in day_prefs.items() %}
+                                        <span class="indicator {{ user.lower() }} {{ ptype }}">{{ user[0] }}</span>
+                                    {% endfor %}
                                 </div>
                             </div>
                         {% endif %}
@@ -78,8 +83,7 @@
         {% endfor %}
     </div>
 
-    <div id="message-area" class="message-area"></div> <!-- Added base class for consistency -->
-
+    <div id="message-area" class="message-area"></div>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
