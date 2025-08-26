@@ -4,6 +4,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const calendarContainer = document.getElementById('calendar-container');
     const messageArea = document.getElementById('message-area');
 
+    // --- Prefix-aware API helper ---
+    // Works on both roots:
+    //   camping.dropbop.xyz  -> PREFIX = ''
+    //   dropbop.xyz/camping  -> PREFIX = '/camping'
+    const firstSeg = window.location.pathname.split('/')[1] || '';
+    const PREFIX = firstSeg ? `/${firstSeg}` : '';
+    const api = (p) => `${PREFIX}/${p.replace(/^\/+/, '')}`;
+
     // Auth UI
     const authStatus = document.getElementById('auth-status');
     const loginForm = document.getElementById('login-form');
@@ -18,12 +26,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function refreshAuth() {
         try {
-            const res = await fetch('/api/auth/status');
+            const res = await fetch(api('api/auth/status'));
             const data = await res.json();
             isAdmin = !!data.is_admin;
             updateAuthUI();
         } catch (e) {
-            // If status check fails, stay conservative: treat as locked
             isAdmin = false;
             updateAuthUI();
         }
@@ -50,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             try {
-                const res = await fetch('/api/auth/login', {
+                const res = await fetch(api('api/auth/login'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: pwd })
@@ -72,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             try {
-                const res = await fetch('/api/auth/logout', { method: 'POST' });
+                const res = await fetch(api('api/auth/logout'), { method: 'POST' });
                 const data = await res.json();
                 if (res.ok) {
                     showMessage(data.message || 'Locked.', 'success');
@@ -154,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('/api/preferences', {
+            const response = await fetch(api('api/preferences'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSend),
