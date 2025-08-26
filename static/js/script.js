@@ -18,6 +18,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     const passwordInput = document.getElementById('admin-password');
 
+    // THEME: toggle + persistence (default = dark)
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const THEME_KEY = 'theme';
+
+    function applyTheme(theme) {
+        const t = theme === 'light' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+        updateToggleLabel();
+    }
+    function storedTheme() {
+        try { return localStorage.getItem(THEME_KEY); } catch { return null; }
+    }
+    function saveTheme(t) {
+        try { localStorage.setItem(THEME_KEY, t); } catch { /* noop */ }
+    }
+    function currentTheme() {
+        return document.documentElement.getAttribute('data-theme') || 'dark';
+    }
+    function updateToggleLabel() {
+        if (!themeToggleBtn) return;
+        const t = currentTheme();
+        themeToggleBtn.textContent = t === 'dark' ? '☀️ Light mode' : '🌙 Dark mode';
+        themeToggleBtn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    }
+    // Initialize theme (dark by default)
+    applyTheme(storedTheme() || 'dark');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const next = currentTheme() === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            saveTheme(next);
+        });
+    }
+
     let isAdmin = document.body.dataset.admin === '1';
     let selectedUser = '';
     let selectedPreference = '';
